@@ -1,11 +1,11 @@
 import React from 'react';
-import { Form, Button, Message } from 'semantic-ui-react';
+import { Form, Button } from 'semantic-ui-react';
 import Validator from 'validator';
 import PropTypes from 'prop-types';
 
 import InLineError from '../messages/InLineError';
 
-class LoginForm extends React.Component {
+class SignupForm extends React.Component {
   state = {
     data: {
       email: '',
@@ -13,7 +13,23 @@ class LoginForm extends React.Component {
     },
     loading: false,
     errors: {},
-  };
+  }
+
+  onSubmit = (e) => {
+    e.preventDefault();
+
+    const { data } = this.state;
+    const { submit } = this.props;
+    const errors = this.validate(data);
+    this.setState({ errors });
+
+    if (Object.keys(errors).length === 0) {
+      this.setState({ loading: true });
+      console.log(data);
+      submit(data)
+        .catch(err => this.setState({ errors: err.response.data.errors, loading: false }));
+    }
+  }
 
   handleChange = (e) => {
     e.persist();
@@ -21,22 +37,6 @@ class LoginForm extends React.Component {
     this.setState(prevState => ({
       data: { ...prevState.data, [e.target.name]: e.target.value },
     }));
-  }
-
-  onSubmit = () => {
-    const { data } = this.state;
-    const { submit } = this.props;
-    const errors = this.validate(data);
-    this.setState({ errors });
-    if (Object.keys(errors).length === 0) {
-      this.setState({ loading: true });
-      submit(data).catch(err => this.setState(
-        {
-          errors: err.response.data.errors,
-          loading: false,
-        },
-      ));
-    }
   }
 
   validate = (data) => {
@@ -49,18 +49,10 @@ class LoginForm extends React.Component {
   }
 
   render() {
-    const { data, errors, loading } = this.state;
+    const { data, loading, errors } = this.state;
 
     return (
       <Form onSubmit={this.onSubmit} loading={loading}>
-        {errors.global
-          && (
-          <Message negative>
-            <Message.Header>Something went wrong</Message.Header>
-            <p>{errors.global}</p>
-          </Message>
-          )
-        }
         <Form.Field error={!!errors.email}>
           <label htmlFor="email">
             Email
@@ -88,15 +80,13 @@ class LoginForm extends React.Component {
             />
           </label>
         </Form.Field>
-        {errors.password && <InLineError text={errors.password} />}
-        <Button primary>Login</Button>
+        <Button primary>Sign Up</Button>
       </Form>
     );
   }
 }
 
-LoginForm.propTypes = {
+SignupForm.propTypes = {
   submit: PropTypes.func.isRequired,
 };
-
-export default LoginForm;
+export default SignupForm;
